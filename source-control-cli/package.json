@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "dotenv -e ./env/test.env jest",
     "start:dev": "dotenv -e ./env/dev.env node index.js",
     "start:prod": "node index.js",
     "build": "pkg index.js -t node16-linux-x64,node16-macos-x64,node16-win-x64 --output ./build/scc"

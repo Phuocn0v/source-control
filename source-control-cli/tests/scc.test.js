@@ -1,30 +1,30 @@
-const fs = require("fs");
-const path = require("path");
 const Scc = require("../src/scc");
+const fs = require("fs");
+const os = require("os");
+const crypto = require("crypto");
 
 describe("Scc class", () => {
-  const dir = ".scc";
-  const file = "HEAD";
-
   let scc;
-
   beforeEach(() => {
-    // Cleanup before each test
-    if (fs.existsSync(dir)) {
-      fs.rmdirSync(dir, { recursive: true });
-    }
-
-    // Initialize Scc instance before each test
     scc = new Scc();
   });
-
-  it("should create a hidden folder named .scc", () => {
-    scc.init();
-    expect(fs.existsSync(dir)).toBeTruthy();
+  afterEach(() => {
+    fs.rmdirSync(`${scc.path}/.scc`, { recursive: true });
+    fs.unlinkSync(`${scc.path}/.sccignore`);
   });
 
-  it("should create a text file named HEAD with no extension in the .scc folder", () => {
-    scc.init();
-    expect(fs.existsSync(path.join(dir, file))).toBeTruthy();
+  describe("INIT", () => {
+    it("should create hidden folder .scc if they do not exist", () => {
+      scc.init();
+      expect(fs.existsSync(`${scc.path + "/.scc/"}`)).toBe(true);
+    });
+    it("should create HEAD file if they do not exist", () => {
+      scc.init();
+      expect(fs.existsSync(`${scc.path + "/.scc/HEAD"}`)).toBe(true);
+    });
+    it("should create .sccignore file if they do not exist", () => {
+      scc.init();
+      expect(fs.existsSync(`${scc.path + "/.sccignore"}`)).toBe(true);
+    });
   });
 });
