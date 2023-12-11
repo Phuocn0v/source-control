@@ -1,19 +1,17 @@
 const { Command } = require("commander");
-const Repository = require("./repository.js");
+const Scc = require("./scc.js");
 
-const program = new Command();
-const repository = new Repository();
+const Program = new Command();
+const scc = new Scc();
 
-program
-  .name("source-control-cli")
+Program.name("source-control-cli")
   .description("CLI to control source code")
   .version("0.0.0");
 
-program
-  .command("init")
+Program.command("init")
   .description("initialize a new repository")
   .action(() => {
-    repository.init();
+    scc.init();
   });
 
-module.exports = program;
+module.exports = Program;
