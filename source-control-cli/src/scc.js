@@ -21,6 +21,14 @@ class Scc {
       fs.mkdirSync(`${this.path}/.scc`);
     }
 
+    if (!fs.existsSync(`${this.path}/.scc/.staging`)) {
+      fs.mkdirSync(`${this.path}/.scc/.staging`);
+    }
+
+    if (!fs.existsSync(`${this.path}/.scc/.commit`)) {
+      fs.mkdirSync(`${this.path}/.scc/.commit`);
+    }
+
     // Create or overwrite HEAD file
     fs.writeFileSync(`${this.path}/.scc/HEAD`, this.generateChecksum());
   }
@@ -37,8 +45,10 @@ class Scc {
     return hash.digest("hex");
   }
 
-  add() {
-    console.log("Add files to the index");
+  status() {}
+
+  add(filename, options) {
+    console.log(filename, options);
   }
 }
 

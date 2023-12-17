@@ -14,4 +14,18 @@ Program.command("init")
     scc.init();
   });
 
+Program.command("status")
+  .description("show the working tree status")
+  .action(() => {
+    scc.status();
+  });
+
+Program.command("add [filename]")
+  .description("add file contents to the index")
+  .option("-a, --all", "add all files to staging area")
+  .action((filename, options, command) => {
+    const opts = command.opts();
+    console.log(filename, opts);
+  });
+
 module.exports = Program;

@@ -26,5 +26,19 @@ describe("Scc class", () => {
       scc.init();
       expect(fs.existsSync(`${scc.path + "/.sccignore"}`)).toBe(true);
     });
+
+    it("should create .staging folder if they do not exist", () => {
+      scc.init();
+      expect(fs.existsSync(`${scc.path + "/.scc/.staging"}`)).toBe(true);
+    });
+
+    it("should create .commit folder if they do not exist", () => {
+      scc.init();
+      expect(fs.existsSync(`${scc.path + "/.scc/.commit"}`)).toBe(true);
+    });
+  });
+
+  describe("ADD", () => {
+    it("should add file to staging area", () => {});
   });
 });
