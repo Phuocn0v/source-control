@@ -8,12 +8,13 @@ describe("Scc class", () => {
   beforeEach(() => {
     scc = new Scc();
   });
-  afterEach(() => {
-    fs.rmdirSync(`${scc.path}/.scc`, { recursive: true });
-    fs.unlinkSync(`${scc.path}/.sccignore`);
-  });
 
   describe("INIT", () => {
+    afterEach(() => {
+      fs.rmdirSync(`${scc.path}/.scc`, { recursive: true });
+      fs.unlinkSync(`${scc.path}/.sccignore`);
+    });
+
     it("should create hidden folder .scc if they do not exist", () => {
       scc.init();
       expect(fs.existsSync(`${scc.path + "/.scc/"}`)).toBe(true);
@@ -39,6 +40,6 @@ describe("Scc class", () => {
   });
 
   describe("ADD", () => {
-    it("should add file to staging area", () => {});
+    it("should add file checksum in .staging file", () => {});
   });
 });

@@ -25,7 +25,7 @@ Program.command("add [filename]")
   .option("-a, --all", "add all files to staging area")
   .action((filename, options, command) => {
     const opts = command.opts();
-    console.log(filename, opts);
+    scc.add(filename, opts);
   });
 
 module.exports = Program;
