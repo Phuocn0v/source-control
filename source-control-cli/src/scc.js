@@ -49,31 +49,38 @@ class Scc {
 
   add(file, options) {
     const stagingPath = `${this.path}/.scc/.staging`;
-    const regex = new RegExp(`^.*${this.path}/${file}.*$`, "gm");
+    // const regex = new RegExp(`^.*${this.path}/${file}.*$`, "gm");
 
     if (file && file !== ".") {
-      const filepath = path.parse(file);
-      const buffer = fs.readFileSync(`${path.join(this.path, filepath)}`);
+      const filepath = path.join(this.path, file);
+      console.log(filepath);
+      const buffer = fs.readFileSync(filepath);
       const hash = crypto.createHash("sha1");
 
       hash.update(buffer);
-      const hashString = `${this.path}/${file} ${hash.digest("hex")}\n`;
+      const hashString = `${filepath} ${hash.digest("hex")}`;
 
       let stagingContent = fs.existsSync(stagingPath)
         ? fs.readFileSync(stagingPath, "utf-8")
         : "";
+      let stagingContentArray = stagingContent.split("\n");
 
-      if (regex.test(stagingContent)) {
-        stagingContent = stagingContent.replace(
-          `${this.path}/${file}`,
-          hashString.trim()
-        );
-      } else stagingContent += hashString;
+      let found = false;
+      stagingContentArray = stagingContentArray.map((content) => {
+        console.log("CONTENT:", content);
+        console.log("FILE_PATH", filepath.toString());
+        if (content.includes(filepath)) {
+          found = true;
+          return hashString;
+        } else return content;
+      });
+      if (!found) stagingContentArray.push(hashString);
 
+      stagingContent = stagingContentArray.join("\n");
       fs.writeFileSync(stagingPath, stagingContent);
     }
 
-    if (file === "." || !file || options.all) {
+    if (options.all || file === ".") {
       const files = fs.readdirSync(this.path);
       files.forEach((file) => {
         const filePath = path.join(this.path, file);
@@ -82,19 +89,23 @@ class Scc {
           const hash = crypto.createHash("sha1");
 
           hash.update(buffer);
-          const hashString = `${filePath} ${hash.digest("hex")}\n`;
+          const hashString = `${filePath} ${hash.digest("hex")}`;
 
           let stagingContent = fs.existsSync(stagingPath)
             ? fs.readFileSync(stagingPath, "utf-8")
             : "";
+          let stagingContentArray = stagingContent.split("\n");
 
-          if (regex.test(stagingContent)) {
-            stagingContent = stagingContent.replace(
-              `${this.path}/${file}`,
-              hashString.trim()
-            );
-          } else stagingContent += hashString;
+          let found = false;
+          stagingContentArray = stagingContentArray.map((content) => {
+            if (content.includes(filePath)) {
+              found = true;
+              return hashString;
+            } else return content;
+          });
+          if (!found) stagingContentArray.push(hashString);
 
+          stagingContent = stagingContentArray.join("\n");
           fs.writeFileSync(stagingPath, stagingContent);
         }
       });
