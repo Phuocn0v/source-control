@@ -53,7 +53,6 @@ class Scc {
 
     if (file && file !== ".") {
       const filepath = path.join(this.path, file);
-      console.log(filepath);
       const buffer = fs.readFileSync(filepath);
       const hash = crypto.createHash("sha1");
 
@@ -67,8 +66,6 @@ class Scc {
 
       let found = false;
       stagingContentArray = stagingContentArray.map((content) => {
-        console.log("CONTENT:", content);
-        console.log("FILE_PATH", filepath.toString());
         if (content.includes(filepath)) {
           found = true;
           return hashString;
@@ -95,6 +92,9 @@ class Scc {
             ? fs.readFileSync(stagingPath, "utf-8")
             : "";
           let stagingContentArray = stagingContent.split("\n");
+          stagingContentArray = stagingContentArray.filter(
+            (content) => content !== ""
+          );
 
           let found = false;
           stagingContentArray = stagingContentArray.map((content) => {
