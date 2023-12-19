@@ -1,5 +1,5 @@
 const { Command } = require("commander");
-const Scc = require("./scc.js");
+const Scc = require("./scc");
 
 const Program = new Command();
 const scc = new Scc();

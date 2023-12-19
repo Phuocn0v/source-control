@@ -45,14 +45,36 @@ class Scc {
     return hash.digest("hex");
   }
 
-  status() {}
+  status() {
+    this._getAllFiles();
+  }
 
   add(file, options) {
-    const stagingPath = `${this.path}/.scc/.staging`;
-    // const regex = new RegExp(`^.*${this.path}/${file}.*$`, "gm");
-
     if (file && file !== ".") {
       const filepath = path.join(this.path, file);
+      if (fs.existsSync(filepath)) {
+        this._addFile(filepath);
+      } else {
+        console.log(`fatal: pathspec '${file}' did not match any files`);
+      }
+    }
+
+    if (options.all || file === ".") {
+      const files = fs.readdirSync(this.path);
+      files.forEach((file) => {
+        const filepath = path.join(this.path, file);
+        if (fs.statSync(filepath).isFile()) {
+          this._addFile(filepath);
+        } else {
+          console.log(`fatal: pathspec '${file}' did not match any files`);
+        }
+      });
+    }
+  }
+
+  _addFile(filepath) {
+    try {
+      const stagingPath = `${this.path}/.scc/.staging`;
       const buffer = fs.readFileSync(filepath);
       const hash = crypto.createHash("sha1");
 
@@ -75,41 +97,33 @@ class Scc {
 
       stagingContent = stagingContentArray.join("\n");
       fs.writeFileSync(stagingPath, stagingContent);
+    } catch (err) {
+      throw err;
     }
+  }
 
-    if (options.all || file === ".") {
-      const files = fs.readdirSync(this.path);
-      files.forEach((file) => {
-        const filePath = path.join(this.path, file);
-        if (fs.statSync(filePath).isFile()) {
-          const buffer = fs.readFileSync(filePath);
-          const hash = crypto.createHash("sha1");
+  _getAllFiles() {
+    let files = fs.readdirSync(this.path, { recursive: true });
 
-          hash.update(buffer);
-          const hashString = `${filePath} ${hash.digest("hex")}`;
+    // get all ignore files from .sccignore
+    const ignoreFilePath = `${path.join(this.path, ".sccignore")}`;
+    const ignoreFiles = fs.existsSync(ignoreFilePath)
+      ? fs.readFileSync(ignoreFilePath, "utf-8").split("\n")
+      : [];
 
-          let stagingContent = fs.existsSync(stagingPath)
-            ? fs.readFileSync(stagingPath, "utf-8")
-            : "";
-          let stagingContentArray = stagingContent.split("\n");
-          stagingContentArray = stagingContentArray.filter(
-            (content) => content !== ""
-          );
+    files = files.filter((file) => {
+      return !file.includes(".scc");
+    });
 
-          let found = false;
-          stagingContentArray = stagingContentArray.map((content) => {
-            if (content.includes(filePath)) {
-              found = true;
-              return hashString;
-            } else return content;
-          });
-          if (!found) stagingContentArray.push(hashString);
-
-          stagingContent = stagingContentArray.join("\n");
-          fs.writeFileSync(stagingPath, stagingContent);
-        }
+    // filter files based on ignore
+    files = files.filter((file) => {
+      let found = false;
+      ignoreFiles.forEach((ignoreFile) => {
+        if (file.includes(ignoreFile)) found = true;
       });
-    }
+      return !found;
+    });
+    return files;
   }
 }
 
