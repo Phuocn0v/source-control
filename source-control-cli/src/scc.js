@@ -86,7 +86,7 @@ class Scc {
     // if file is in staging file but not in files
     stagingChecksums.forEach((stagingChecksum) => {
       const file = stagingChecksum.split(" ")[0];
-      if (!files.includes(file)) {
+      if (!files.includes(path.relative(this.path, file))) {
         messages.push(`D  ${file}`);
       }
     });
@@ -135,6 +135,9 @@ class Scc {
       });
       if (!found) stagingContentArray.push(hashString);
 
+      stagingContentArray = stagingContentArray.filter(
+        (content) => content !== ""
+      );
       stagingContent = stagingContentArray.join("\n");
       fs.writeFileSync(stagingPath, stagingContent);
     } catch (err) {
