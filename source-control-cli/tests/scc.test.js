@@ -75,4 +75,6 @@ describe("Scc class", () => {
       expect(stagingContent).toContain("sample2.js");
     });
   });
+
+  describe("STATUS", () => {});
 });

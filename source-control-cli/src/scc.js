@@ -46,7 +46,43 @@ class Scc {
   }
 
   status() {
-    this._getAllFiles();
+    const files = this._getAllFiles();
+    const stagingPath = path.join(this.path, ".scc", ".staging");
+
+    // get checksum of every files
+    const checksums = files.map((file) => {
+      const filePath = path.join(this.path, file);
+      console.log(filePath);
+
+      if (fs.lstatSync(filePath).isFile()) {
+        const buffer = fs.readFileSync(filePath);
+        const hash = crypto.createHash("sha1");
+        hash.update(buffer);
+        return hash.digest("hex");
+      }
+    });
+
+    // get checksum of staging file
+    const stagingChecksums = fs.existsSync(stagingPath)
+      ? fs.readFileSync(stagingPath, "utf-8").split("\n")
+      : [];
+
+    files.forEach((file, index) => {
+      const stagingChecksum = stagingChecksums.find((stagingChecksum) =>
+        stagingChecksum.includes(file)
+      );
+      const checksum = checksums[index];
+
+      // if file is not in staging file
+      if (!stagingChecksum) {
+        console.log(`A  ${file}`);
+      } else {
+        // if file is in staging file and checksum is different
+        if (stagingChecksum.split(" ")[1] !== checksum) {
+          console.log(`M  ${file}`);
+        }
+      }
+    });
   }
 
   add(file, options) {
@@ -60,7 +96,7 @@ class Scc {
     }
 
     if (options.all || file === ".") {
-      const files = fs.readdirSync(this.path);
+      const files = this._getAllFiles();
       files.forEach((file) => {
         const filepath = path.join(this.path, file);
         if (fs.statSync(filepath).isFile()) {
