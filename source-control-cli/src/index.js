@@ -17,7 +17,8 @@ Program.command("init")
 Program.command("status")
   .description("show the working tree status")
   .action(() => {
-    scc.status();
+    const messages = scc.status();
+    console.log(messages);
   });
 
 Program.command("add [filename]")

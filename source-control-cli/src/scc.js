@@ -52,8 +52,6 @@ class Scc {
     // get checksum of every files
     const checksums = files.map((file) => {
       const filePath = path.join(this.path, file);
-      console.log(filePath);
-
       if (fs.lstatSync(filePath).isFile()) {
         const buffer = fs.readFileSync(filePath);
         const hash = crypto.createHash("sha1");
@@ -63,6 +61,7 @@ class Scc {
     });
 
     // get checksum of staging file
+    const messages = [];
     const stagingChecksums = fs.existsSync(stagingPath)
       ? fs.readFileSync(stagingPath, "utf-8").split("\n")
       : [];
@@ -75,14 +74,23 @@ class Scc {
 
       // if file is not in staging file
       if (!stagingChecksum) {
-        console.log(`A  ${file}`);
+        messages.push(`A  ${file}`);
       } else {
         // if file is in staging file and checksum is different
         if (stagingChecksum.split(" ")[1] !== checksum) {
-          console.log(`M  ${file}`);
+          messages.push(`M  ${file}`);
         }
       }
     });
+
+    // if file is in staging file but not in files
+    stagingChecksums.forEach((stagingChecksum) => {
+      const file = stagingChecksum.split(" ")[0];
+      if (!files.includes(file)) {
+        messages.push(`D  ${file}`);
+      }
+    });
+    return messages.join("\n");
   }
 
   add(file, options) {
@@ -99,18 +107,14 @@ class Scc {
       const files = this._getAllFiles();
       files.forEach((file) => {
         const filepath = path.join(this.path, file);
-        if (fs.statSync(filepath).isFile()) {
-          this._addFile(filepath);
-        } else {
-          console.log(`fatal: pathspec '${file}' did not match any files`);
-        }
+        this._addFile(filepath);
       });
     }
   }
 
   _addFile(filepath) {
     try {
-      const stagingPath = `${this.path}/.scc/.staging`;
+      const stagingPath = path.join(this.path, ".scc", ".staging");
       const buffer = fs.readFileSync(filepath);
       const hash = crypto.createHash("sha1");
 
@@ -140,12 +144,20 @@ class Scc {
 
   _getAllFiles() {
     let files = fs.readdirSync(this.path, { recursive: true });
+    // remove all folders
+    files = files
+      .map((file) => {
+        const filePath = path.join(this.path, file);
+        if (fs.lstatSync(filePath).isFile()) return file;
+      })
+      .filter((file) => file);
 
     // get all ignore files from .sccignore
-    const ignoreFilePath = `${path.join(this.path, ".sccignore")}`;
-    const ignoreFiles = fs.existsSync(ignoreFilePath)
+    const ignoreFilePath = path.join(this.path, ".sccignore");
+    let ignoreFiles = fs.existsSync(ignoreFilePath)
       ? fs.readFileSync(ignoreFilePath, "utf-8").split("\n")
       : [];
+    ignoreFiles = ignoreFiles.filter((file) => file !== "");
 
     files = files.filter((file) => {
       return !file.includes(".scc");
@@ -159,6 +171,7 @@ class Scc {
       });
       return !found;
     });
+
     return files;
   }
 }
