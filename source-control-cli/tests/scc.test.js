@@ -1,6 +1,7 @@
 const Scc = require("../src/scc");
 const fs = require("fs");
 const path = require("path");
+const { deserialize } = require("v8");
 
 describe("Scc class", () => {
   let scc;
@@ -33,6 +34,10 @@ describe("Scc class", () => {
 
     it("should create .commit folder if they do not exist", () => {
       expect(fs.existsSync(`${scc.path + "/.scc/.commit"}`)).toBe(true);
+    });
+
+    it("should create .blob folder if they do not exist", () => {
+      expect(fs.existsSync(`${scc.path + "/.scc/.blob"}`)).toBe(true);
     });
   });
 

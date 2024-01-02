@@ -29,4 +29,10 @@ Program.command("add [filename]")
     scc.add(filename, opts);
   });
 
+Program.command("commit [message]")
+  .description("record changes to the repository")
+  .action((message) => {
+    scc.commit(message);
+  });
+
 module.exports = Program;
