@@ -15,6 +15,7 @@ class Scc {
       staging: path.join(this.directory, ".scc", ".staging"),
       commit: path.join(this.directory, ".scc", ".commit"),
       blob: path.join(this.directory, ".scc", ".blob"),
+      head: path.join(this.directory, ".scc", "HEAD"),
     };
   }
 
@@ -208,6 +209,8 @@ class Scc {
       return !found;
     });
 
+    files.push(".sccignore");
+
     return files;
   }
 
@@ -226,10 +229,11 @@ class Scc {
     fs.writeFileSync(path.join(commitPath, "checksum"), hashDigest);
     fs.writeFileSync(path.join(commitPath, "records"), stagingContent);
 
-    // update HEAD and staging
-    fs.writeFileSync(this.path.staging, "");
-    fs.writeFileSync(this.path.scc, hashDigest);
+    // update HEAD
+    fs.writeFileSync(this.path.head, hashDigest);
   }
+
+  revert(commitHash) {}
 }
 
 module.exports = Scc;
