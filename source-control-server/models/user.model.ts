@@ -1,7 +1,7 @@
-import mongoose from "mongoose";
+import mongoose, { Model } from "mongoose";
 import toJson from "./plugins/toJson";
 
-export interface User {
+export interface IUser {
     _id: string;
     username: string;
     password: string;
@@ -11,7 +11,13 @@ export interface User {
     isEmailVerified: boolean;
 }
 
-const userSchema = new mongoose.Schema<User>({
+interface IUserModel extends Model<IUser> {
+    isEmailTaken(email: string, excludeUserId: string): Promise<boolean>;
+    isUsernameTaken(username: string, excludeUserId: string): Promise<boolean>;
+    isPhoneNumberTaken(phoneNumber: string, excludeUserId: string): Promise<boolean>;
+}
+
+const userSchema = new mongoose.Schema<IUser>({
     username: {
         type: String,
         required: true,
@@ -53,4 +59,21 @@ const userSchema = new mongoose.Schema<User>({
 
 userSchema.plugin(toJson);
 
-export default mongoose.model<User>("User", userSchema);
+userSchema.statics.isEmailTaken = async function (email: string, excludeUserId: string) {
+    const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
+    return !!user;
+}
+
+userSchema.statics.isUsernameTaken = async function (username: string, excludeUserId: string) {
+    const user = await this.findOne({ username, _id: { $ne: excludeUserId } });
+    return !!user;
+}
+
+userSchema.statics.isPhoneNumberTaken = async function (phoneNumber: string, excludeUserId: string) {
+    const user = await this.findOne({ phoneNumber, _id: { $ne: excludeUserId } });
+    return !!user;
+}
+
+const User: IUserModel = mongoose.model<IUser, IUserModel>("User", userSchema);
+
+export default User;
