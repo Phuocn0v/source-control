@@ -52,3 +52,5 @@ const userSchema = new mongoose.Schema<User>({
 })
 
 userSchema.plugin(toJson);
+
+export default mongoose.model<User>("User", userSchema);
