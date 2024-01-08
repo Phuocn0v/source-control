@@ -2,7 +2,7 @@ import mongoose, { Model } from "mongoose";
 import toJson from "./plugins/toJson";
 
 export interface IUser {
-    _id: string;
+    _id: mongoose.Schema.Types.ObjectId;
     username: string;
     password: string;
     email: string;
@@ -12,9 +12,9 @@ export interface IUser {
 }
 
 interface IUserModel extends Model<IUser> {
-    isEmailTaken(email: string, excludeUserId: string): Promise<boolean>;
-    isUsernameTaken(username: string, excludeUserId: string): Promise<boolean>;
-    isPhoneNumberTaken(phoneNumber: string, excludeUserId: string): Promise<boolean>;
+    isEmailTaken(email: string, excludeUserId?: string): Promise<boolean>;
+    isUsernameTaken(username: string, excludeUserId?: string): Promise<boolean>;
+    isPhoneNumberTaken(phoneNumber: string, excludeUserId?: string): Promise<boolean>;
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -59,17 +59,17 @@ const userSchema = new mongoose.Schema<IUser>({
 
 userSchema.plugin(toJson);
 
-userSchema.statics.isEmailTaken = async function (email: string, excludeUserId: string) {
+userSchema.statics.isEmailTaken = async function (email: string, excludeUserId?: string) {
     const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
     return !!user;
 }
 
-userSchema.statics.isUsernameTaken = async function (username: string, excludeUserId: string) {
+userSchema.statics.isUsernameTaken = async function (username: string, excludeUserId?: string) {
     const user = await this.findOne({ username, _id: { $ne: excludeUserId } });
     return !!user;
 }
 
-userSchema.statics.isPhoneNumberTaken = async function (phoneNumber: string, excludeUserId: string) {
+userSchema.statics.isPhoneNumberTaken = async function (phoneNumber: string, excludeUserId?: string) {
     const user = await this.findOne({ phoneNumber, _id: { $ne: excludeUserId } });
     return !!user;
 }
