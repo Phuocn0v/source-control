@@ -1,9 +1,16 @@
-import jwt from "jsonwebtoken";
-import Token from "../models/token.model";
-import User, { IUser } from "../models/user.model";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import Token, { IToken, ITokenModel } from "../models/token.model";
+import { IUser } from "../models/user.model";
 import mongoose from "mongoose";
 import ETokenTypes from "../config/token";
 import moment, { Moment } from "moment";
+
+interface ITokenPayload {
+    sub: mongoose.Schema.Types.ObjectId | string,
+    iat: number,
+    exp: number,
+    type: ETokenTypes
+}
 
 const generateToken = async (
     userId: mongoose.Schema.Types.ObjectId,
@@ -11,7 +18,7 @@ const generateToken = async (
     type: ETokenTypes,
     secret = process.env.JWT_SECRET as string
 ) => {
-    const payload = {
+    const payload: ITokenPayload = {
         sub: userId,
         iat: moment().unix(),
         exp: expires.unix(),
@@ -38,9 +45,9 @@ const saveToken = async (
     return tokenDoc;
 }
 
-const verifyToken = async (token: string, type: ETokenTypes) => {
-    const payload = jwt.verify(token, process.env.JWT_SECRET as string) as { sub: string, iat: number, exp: number, type: ETokenTypes };
-    const tokenDoc = await Token.findOne({ token, type, user: payload.sub, blacklisted: false });
+async function verifyToken(token: string, type: ETokenTypes) {
+    const payload: string | JwtPayload = jwt.verify(token, process.env.JWT_SECRET as string);
+    const tokenDoc: IToken | null = await Token.findOne({ token, type, user: payload.sub, blacklisted: false });
     if (!tokenDoc) {
         throw new Error('Token not found');
     }

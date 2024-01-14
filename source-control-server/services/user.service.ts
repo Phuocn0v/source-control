@@ -1,8 +1,9 @@
-import User, { IUser } from "../models/user.model";
+import { ICreateUser } from "../dtos/user.dto";
+import User, { IUser, IUserModel } from "../models/user.model";
 import ApiError from "../utils/ApiError";
 import httpStatus from 'http-status';
 
-const createUser = async (user: IUser) => {
+async function createUser(user: ICreateUser) {
     if (await User.isEmailTaken(user.email)) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already taken');
     }
@@ -15,29 +16,43 @@ const createUser = async (user: IUser) => {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Phone number is already taken');
     }
 
-    const newUser = new User(user);
-    await newUser.save();
+    const newUser: IUser = new User(user);
     return newUser;
 }
 
-const getUserById = async (id: string) => {
-    const user: IUser | null = await User.findById(id);
+async function getUserById(id: string) {
+    const user: IUser | null = await User.findOne({ _id: id });
     if (!user) {
         throw new ApiError(404, 'User not found');
     }
     return user;
 }
 
-const getUserByEmail = async (email: string) => {
-    const user: IUser | null = await User.findOne({ email });
+async function getUserByEmail(email: string) {
+    const user: IUserModel | null = await User.findOne({ email });
     if (!user) {
         throw new ApiError(404, 'User not found');
     }
     return user;
 };
 
+async function updateUserById(userId: string, updateBody: IUser) {
+    const user = await getUserById(userId);
+    if (!user) {
+        throw new ApiError(404, 'User not found');
+    }
+
+    if (updateBody.email && (await User.isEmailTaken(updateBody.email, userId))) {
+        throw new ApiError(400, 'Email already taken');
+    }
+
+    await User.updateOne({ _id: userId }, updateBody);
+    return await getUserById(userId);
+}
+
 export default {
     createUser,
     getUserById,
-    getUserByEmail
+    getUserByEmail,
+    updateUserById
 }

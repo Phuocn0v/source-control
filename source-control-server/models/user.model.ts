@@ -1,5 +1,6 @@
 import mongoose, { Model } from "mongoose";
 import toJson from "./plugins/toJson";
+import * as bcrypt from 'bcrypt'
 
 export interface IUser {
     _id: mongoose.Schema.Types.ObjectId;
@@ -11,13 +12,20 @@ export interface IUser {
     isEmailVerified: boolean;
 }
 
-interface IUserModel extends Model<IUser> {
+export interface IUserModel extends Model<IUser> {
     isEmailTaken(email: string, excludeUserId?: string): Promise<boolean>;
     isUsernameTaken(username: string, excludeUserId?: string): Promise<boolean>;
     isPhoneNumberTaken(phoneNumber: string, excludeUserId?: string): Promise<boolean>;
+    isPasswordMatch(password: string): Promise<boolean>;
+    getUser(): IUser;
 }
 
 const userSchema = new mongoose.Schema<IUser>({
+    _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        auto: true
+    },
     username: {
         type: String,
         required: true,
@@ -72,6 +80,17 @@ userSchema.statics.isUsernameTaken = async function (username: string, excludeUs
 userSchema.statics.isPhoneNumberTaken = async function (phoneNumber: string, excludeUserId?: string) {
     const user = await this.findOne({ phoneNumber, _id: { $ne: excludeUserId } });
     return !!user;
+}
+
+userSchema.methods.isPasswordMatch = async function (password: string) {
+    const user = this as IUser;
+    const match = await bcrypt.compare(password, user.password);
+    return match;
+}
+
+userSchema.methods.getUser = function () {
+    const user = this as IUser;
+    return user;
 }
 
 const User: IUserModel = mongoose.model<IUser, IUserModel>("User", userSchema);

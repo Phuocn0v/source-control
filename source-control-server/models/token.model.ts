@@ -10,6 +10,10 @@ export interface IToken {
     blacklisted: boolean;
 }
 
+export interface ITokenModel extends mongoose.Model<IToken> {
+
+}
+
 const tokenSchema = new mongoose.Schema<IToken>({
     token: {
         type: String,
@@ -40,6 +44,6 @@ const tokenSchema = new mongoose.Schema<IToken>({
 
 tokenSchema.plugin(toJson);
 
-const Token = mongoose.model<IToken>('Token', tokenSchema);
+const Token = mongoose.model<IToken, ITokenModel>('Token', tokenSchema);
 
 export default Token;
