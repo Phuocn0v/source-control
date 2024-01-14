@@ -98,8 +98,6 @@ describe('User Service Test', () => {
             };
 
             const newUser = await userService.createUser(user);
-            console.log(newUser._id.toString());
-
             // Wait for 1 second before fetching the user
             await new Promise(resolve => setTimeout(resolve, 1000));
 

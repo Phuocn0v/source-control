@@ -6,6 +6,7 @@ import { Server } from "http";
 let server: Server;
 
 mongoose.connect(config.default.mongoose.uri).then(() => {
+    console.log('Connected to MongoDB: ' + config.default.mongoose.uri);
     server = app.listen(3000, () => {
         console.log('Server is running');
     });

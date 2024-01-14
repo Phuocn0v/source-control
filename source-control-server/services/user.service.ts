@@ -16,7 +16,7 @@ async function createUser(user: ICreateUser) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Phone number is already taken');
     }
 
-    const newUser: IUser = new User(user);
+    const newUser: IUser = await User.create(user);
     return newUser;
 }
 

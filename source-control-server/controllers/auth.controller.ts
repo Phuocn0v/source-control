@@ -14,7 +14,6 @@ import ETokenTypes from "../config/token";
 async function register(req: Request, res: Response) {
     const { email, username, password, phoneNumber, role } = req.body;
     const user = await userService.createUser({ email, username, password, phoneNumber, role });
-
     return res.status(httpStatus.CREATED).send(user);
 }
 
@@ -42,7 +41,7 @@ async function resetPassword(req: Request, res: Response) {
     if (!token) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Token is required');
     }
-    await authService.resetPassword(token, req.body.password);
+    await authService.resetPassword(token, newPassword);
     return res.status(httpStatus.NO_CONTENT).send();
 }
 
@@ -51,9 +50,10 @@ async function sendResetPasswordEmail(req: Request, res: Response) {
     return res.status(httpStatus.NO_CONTENT).send();
 }
 
-async function sendVerificationEmail(req: RequestWithUser, res: Response) {
-    const verifyEmailToken = await tokenService.generateVerifyEmailToken(req.user);
-    await mailService.sendVerificationEmail(req.user.email, verifyEmailToken);
+async function sendVerificationEmail(req: Request, res: Response) {
+    const user: IUser = req.body.user;
+    const verifyEmailToken = await tokenService.generateVerifyEmailToken(user);
+    await mailService.sendVerificationEmail(user.email, verifyEmailToken);
     return res.status(httpStatus.NO_CONTENT).send();
 }
 
@@ -64,4 +64,15 @@ async function verifyEmailToken(req: Request, res: Response) {
     }
     await authService.verifyEmail(token);
     return res.status(httpStatus.NO_CONTENT).send();
+}
+
+export default {
+    register,
+    login,
+    logout,
+    refreshAuth,
+    resetPassword,
+    sendResetPasswordEmail,
+    sendVerificationEmail,
+    verifyEmailToken
 }
